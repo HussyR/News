@@ -14,8 +14,8 @@
 
 ## Технологии использованные в проекте
 
-Core Data 
-UIKit
-Foundation
+- Core Data 
+- UIKit
+- Foundation
 
 ## 
