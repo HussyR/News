@@ -6,6 +6,8 @@
 //
 
 import Foundation
+import CoreData
+import UIKit
 
 /*
  Отдельно сохраняю массив посещений новостей так как Encoder не кодирует visited

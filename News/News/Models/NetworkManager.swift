@@ -11,7 +11,7 @@ class NetworkManager {
     
     let source = "https://newsapi.org/v2/everything"
     let apiKey = "55041c0635e44672a183851674e7846e"
-    let topic = "bitcoin"
+    let topic = "cats"
     var currentPage = 1
     let maxPage = 5
     let countOfNewsInPage = 20
