@@ -54,11 +54,16 @@ final class ViewController: UIViewController {
     //MARK: setupUI
     
     private func setupUI() {
+        view.addSubview(search)
         view.addSubview(tableView)
         NSLayoutConstraint.activate([
+            search.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            search.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            search.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            tableView.topAnchor.constraint(equalTo: search.bottomAnchor),
             tableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
         ])
     }
@@ -119,6 +124,13 @@ final class ViewController: UIViewController {
     
     //MARK: UI Elements
     // lazy var чтобы можно было обращаться к self
+    
+    let search: UISearchBar = {
+        let search = UISearchBar()
+        search.translatesAutoresizingMaskIntoConstraints = false
+        search.text = "Поиск"
+        return search
+    }()
     
     let refreshControl: UIRefreshControl = {
         let refreshControl = UIRefreshControl()
