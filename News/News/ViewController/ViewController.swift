@@ -32,14 +32,18 @@ final class ViewController: UIViewController {
     let networkManager = NetworkManager()
     var articles = [Article]()
     var isLoaded = true
+    var topic: String?
+    
+    // MARK: - LifeCycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = UIColor(named: "backgroundColor")
+        search.delegate = self
         setupNavigationBar()
         setupUI()
         if articles.isEmpty {
-            fetchNextPage()
+//            fetchNextPage()
         } else {
             isLoaded = false
             networkManager.currentPage = (articles.count / 20) + 1
@@ -62,7 +66,7 @@ final class ViewController: UIViewController {
             search.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             search.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             search.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            
+
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             tableView.topAnchor.constraint(equalTo: search.bottomAnchor),
@@ -73,7 +77,10 @@ final class ViewController: UIViewController {
     //MARK: Network logic
     
     private func fetchNextPage() {
-        networkManager.fetchNextPage { [weak self] (articles, error) in
+        guard let topic = topic else {
+            return
+        }
+        networkManager.fetchNextPage (topic: topic) { [weak self] (articles, error) in
             guard let self = self else {return}
             if let error = error as? URLError,
                error.errorCode == -1020
@@ -90,7 +97,8 @@ final class ViewController: UIViewController {
             guard let articles = articles
             else {return}
             DispatchQueue.main.async {
-                self.articles.append(contentsOf: articles)
+//                self.articles.append(contentsOf: articles)
+                self.articles = articles
                 self.tableView.reloadData()
                 self.isLoaded = false
             }
@@ -102,7 +110,10 @@ final class ViewController: UIViewController {
     
     @objc private func refresh(sender: UIRefreshControl) {
         networkManager.currentPage = 1
-        networkManager.fetchNextPage { [weak self] (articles, error) in
+        guard let topic = topic else {
+            return
+        }
+        networkManager.fetchNextPage (topic: topic) { [weak self] (articles, error) in
             guard let self = self else {return}
             if let error = error as? URLError,
                error.errorCode == -1020
@@ -130,7 +141,6 @@ final class ViewController: UIViewController {
     let search: UISearchBar = {
         let search = UISearchBar()
         search.translatesAutoresizingMaskIntoConstraints = false
-        search.text = "Поиск"
         return search
     }()
     
@@ -146,10 +156,20 @@ final class ViewController: UIViewController {
         tableView.backgroundColor = UIColor(named: "backgroundColor")
         tableView.delegate = self
         tableView.dataSource = self
+        tableView.isUserInteractionEnabled = true
         tableView.register(NewsTableViewCell.self, forCellReuseIdentifier: cellID)
         tableView.refreshControl = refreshControl
         return tableView
     }()
+    
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        print("ended")
+        search.resignFirstResponder()
+    }
+    
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        print("began")
+    }
 
 }
 //MARK: UITableViewDataSource, UITableViewDelegate
@@ -203,7 +223,8 @@ extension ViewController: UIScrollViewDelegate {
             if (position > scrollView.contentSize.height + 30) {
                 tableView.tableFooterView = createSpinnerFooter()
                 isLoaded = true
-                networkManager.fetchNextPage { [weak self] (articles, error) in
+                guard let topic = topic else { return }
+                networkManager.fetchNextPage(topic: topic) { [weak self] (articles, error) in
                     guard let self = self else {return}
                     if let error = error as? URLError,
                        error.errorCode == -1020
@@ -230,3 +251,16 @@ extension ViewController: UIScrollViewDelegate {
         
     }
 }
+
+extension ViewController: UISearchBarDelegate {
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        let text = searchBar.text
+        topic = text
+        networkManager.currentPage = 1
+        fetchNextPage()
+        search.resignFirstResponder()
+    }
+    
+    
+}
+
